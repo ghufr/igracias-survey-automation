@@ -1,0 +1,15 @@
+{
+  "name": "igracias-survey-automation",
+  "version": "0.0.1",
+  "description": "Igracias Survey Automation",
+  "main": "main.js",
+  "license": "ISC",
+  "private": true,
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "selenium-webdriver": "^4.0.0-alpha.1"
+  },
+  "scripts": {
+    "start": "node ./main.js"
+  }
+}
