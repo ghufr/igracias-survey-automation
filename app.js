@@ -1,5 +1,6 @@
 const { Builder, By } = require("selenium-webdriver");
-const config = require("./config");
+const { ServiceBuilder } = require("selenium-webdriver/firefox");
+// const path = require("path");
 
 const getRawLinks = links => {
   const promises = links.map(async link => {
@@ -8,7 +9,7 @@ const getRawLinks = links => {
   return Promise.all(promises);
 };
 
-const fillSurvey = async (links, driver) => {
+const fillSurvey = async (links, driver, config) => {
   for (link of links) {
     await driver.get(link);
 
@@ -22,7 +23,7 @@ const fillSurvey = async (links, driver) => {
         await question[index]
           .findElements(By.tagName("input"))
           .then(async radio => {
-            await radio[config.multiple_choice].click();
+            await radio[config.rating].click();
           })
           .catch(() => {});
       }
@@ -40,13 +41,24 @@ const fillSurvey = async (links, driver) => {
   await driver.findElement(By.xpath("//input[@class='floatL4']")).click();
 };
 
-async function app(username, password) {
-  let driver = await new Builder().forBrowser("firefox").build();
-  const pageid = 2001;
-
+async function app(username, password, config) {
+  let driver = await new Builder().forBrowser("firefox");
   try {
+    if (config.gecko_path) {
+      const serviceBuilder = new ServiceBuilder(config.gecko_path);
+      driver = await driver.setFirefoxService(serviceBuilder).build();
+    } else {
+      driver = await driver.build();
+    }
+
+    // let options = new S.Options().setBinary(config.gecko_path);
+
+    // let driver = await new Builder()
+    //   .setFirefoxOptions(options)
+    //   .forBrowser("firefox")
+    //   .build();
     const baseUrl = "https://igracias.telkomuniversity.ac.id";
-    let surveyPath = `survey/index.php?pageid=${pageid}`;
+    let surveyPath = `survey/index.php?pageid=${config.pageId}`;
     const surveyUrl = `${baseUrl}/${surveyPath}`;
     await driver.get(baseUrl);
     await driver.sleep(2000);
@@ -76,19 +88,22 @@ async function app(username, password) {
 
       if (isSurvey.length > 0) {
         // Fill Survey
-        await fillSurvey([survey], driver);
+        await fillSurvey([survey], driver, config);
       } else {
         // There still a menu
         const lectures = await driver.findElements(
           By.xpath("//*[@id='form1']//a")
         );
         const lectures_url = await getRawLinks(lectures);
-        await fillSurvey(lectures_url, driver);
+        await fillSurvey(lectures_url, driver, config);
         // await driver.get(survey);
       }
+      await driver.close();
     }
   } catch (e) {
+    console.log("Something went wrong");
     console.log(e);
+    driver.close();
   }
 }
 

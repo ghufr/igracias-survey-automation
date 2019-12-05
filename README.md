@@ -6,7 +6,7 @@
 
 - Node.js
 - `Npm` or `yarn`
-- [Mozilla gecko driver](https://github.com/mozilla/geckodriver/releases) placed in `./bin` directory or in system PATH.
+- [Mozilla gecko driver](https://github.com/mozilla/geckodriver/releases) placed in local directory or in system PATH.
 
 **Steps:**
 
@@ -28,3 +28,4 @@
 ## Troubleshoot
 
 - Make sure you have gecko driver in system PATH or in local directory, if you put in local directory, please edit `config.js` file.
+- add system [PATH](https://docs.telerik.com/teststudio/features/test-runners/add-path-environment-variables)

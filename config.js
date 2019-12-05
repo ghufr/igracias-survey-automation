@@ -5,8 +5,9 @@ module.exports = {
    * 2 (Tidak Puas),
    * 3 (Sangat tidak puas)
    */
-  multiple_choice: 0,
+  rating: 0,
   feedback:
     "Sebelumnya saya mengucapkan terima kasih sekaligus meminta maaf karena tidak dapat memberikan feedback yang konstruktif pada survey ini. (https://github.com/ghufr/igracias-survey-automation)",
-  gecko_path: "./bin/gecko.exe"
+  gecko_path: "./bin/geckodriver.exe",
+  pageId: 2001
 };
