@@ -1,8 +1,8 @@
 # I-Gracias Survey Automation
 
-![Image of Yaktocat](./img/example.png)
+![CLI executable](./img/example.png)
 
-You can get the executable from [here](https://github.com/ghufr/igracias-survey-automation/releases)
+You can get the executable from [here](https://github.com/ghufr/igracias-survey-automation/releases), this program built for automating the cumbersome process of fill up surveys in [I-Gracias](https://igracias.telkomuniversity.ac.id/)
 
 ## Running from Source
 
@@ -14,16 +14,18 @@ You can get the executable from [here](https://github.com/ghufr/igracias-survey-
 
 **Steps:**
 
+1. Clone this project
 1. Create `.env` file in project directory _(see `.env.example` as reference)_
-2. Edit config file
-3. Open terminal in project directory and run `npm run start` or `yarn start`
-4. Done
+1. Edit `config.js` file (`rating`, `feedback`)
+1. Open terminal in project directory and run `npm run start` or `yarn start`
+1. Done
 
 ## Running from executable
 
 **Requirement**
 
 - Mozilla gecko driver
+- Windows
 
 **Steps**:
 
