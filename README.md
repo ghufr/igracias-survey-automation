@@ -19,7 +19,7 @@ You can get the executable from [here](https://github.com/ghufr/igracias-survey-
 3. Open terminal in project directory and run `npm run start` or `yarn start`
 4. Done
 
-## Running from executeable
+## Running from executable
 
 **Requirement**
 
