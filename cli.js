@@ -36,7 +36,8 @@ const app = require("./app");
       {
         type: "text",
         name: "gecko_path",
-        message: "Gecko path: (leave blank if gecko added to PATH)"
+        message: "Gecko path: (leave blank if gecko added to PATH)",
+        initial: "./bin/geckodriver.exe"
       }
     ];
     const res = await prompts(questions);

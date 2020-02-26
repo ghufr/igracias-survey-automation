@@ -4,7 +4,7 @@ const { ServiceBuilder } = require("selenium-webdriver/firefox");
 
 const getRawLinks = links => {
   const promises = links.map(async link => {
-    return await link.getAttribute("href").catch(() => {});
+    return await link.getAttribute("href").catch(() => { });
   });
   return Promise.all(promises);
 };
@@ -25,7 +25,7 @@ const fillSurvey = async (links, driver, config) => {
           .then(async radio => {
             await radio[config.rating].click();
           })
-          .catch(() => {});
+          .catch(() => { });
       }
       await driver.findElement(By.xpath("//*[@value='simpan']")).click();
 
@@ -75,11 +75,18 @@ async function app(username, password, config) {
     await form.findElement(By.id("textPassword")).sendKeys(password);
     // return;
     await form.findElement(By.id("submit")).click();
-    await driver.sleep(1000);
+    await driver.sleep(5000);
     await driver.get(surveyUrl);
+    // Anti alert
+    driver.switchTo().alert().accept();
 
-    const surveys = await driver.findElements(By.xpath("//*[@id='form1']//a"));
-    const survey_url = await getRawLinks(surveys);
+    let survey_url = []
+    if (config.single) {
+      survey_url = [surveyUrl]
+    } else {
+      const surveys = await driver.findElements(By.xpath("//*[@id='form1']//a"));
+      survey_url = await getRawLinks(surveys);
+    }
 
     for (survey of survey_url) {
       await driver.get(survey);

@@ -10,5 +10,6 @@ module.exports = {
     tidak dapat memberikan feedback yang konstruktif pada survey ini.
     (https://github.com/ghufr/igracias-survey-automation)`,
   gecko_path: "./bin/geckodriver.exe",
-  pageId: 2001
+  pageId: 2001,
+  single: true
 };
