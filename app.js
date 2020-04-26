@@ -2,15 +2,15 @@ const { Builder, By } = require("selenium-webdriver");
 const { ServiceBuilder } = require("selenium-webdriver/firefox");
 // const path = require("path");
 
-const getRawLinks = links => {
-  const promises = links.map(async link => {
+const getRawLinks = (links) => {
+  const promises = links.map(async (link) => {
     return await link.getAttribute("href").catch(() => {});
   });
   return Promise.all(promises);
 };
 
 const fillSurvey = async (links, driver, config) => {
-  for (link of links) {
+  for (let link of links) {
     await driver.get(link);
 
     const hlm = await driver.findElements(By.className("hlm1"));
@@ -22,7 +22,7 @@ const fillSurvey = async (links, driver, config) => {
       for (let index = 0; index < question.length; index++) {
         await question[index]
           .findElements(By.tagName("input"))
-          .then(async radio => {
+          .then(async (radio) => {
             await radio[config.rating].click();
           })
           .catch(() => {});
@@ -31,7 +31,7 @@ const fillSurvey = async (links, driver, config) => {
 
       // Search for textbox
       const textBoxs = await driver.findElements(By.tagName("textarea"));
-      for (textbox of textBoxs) {
+      for (let textbox of textBoxs) {
         await textbox.clear();
         await textbox.sendKeys(config.feedback);
       }
@@ -75,13 +75,19 @@ async function app(username, password, config) {
     await form.findElement(By.id("textPassword")).sendKeys(password);
     // return;
     await form.findElement(By.id("submit")).click();
-    await driver.sleep(1000);
+    await driver.sleep(2000);
+    // Dismiss nasty alert()
+    const alert = await driver.switchTo().alert();
+    console.log(alert);
+    await alert.accept();
+    // await driver.switchTo().activeElement().sendKeys(Key.RETURN);
+    // driver.switchTo().alert().accept();
     await driver.get(surveyUrl);
 
     const surveys = await driver.findElements(By.xpath("//*[@id='form1']//a"));
     const survey_url = await getRawLinks(surveys);
 
-    for (survey of survey_url) {
+    for (let survey of survey_url) {
       await driver.get(survey);
 
       const isSurvey = await driver.findElements(By.className("hlm2"));
@@ -103,7 +109,7 @@ async function app(username, password, config) {
   } catch (e) {
     console.log("Something went wrong");
     console.log(e);
-    driver.close();
+    // driver.close();
   }
 }
 
