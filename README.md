@@ -4,6 +4,8 @@
 
 You can get the executable from [here](https://github.com/ghufr/igracias-survey-automation/releases), this program built for automating the cumbersome process of fill up surveys in [I-Gracias](https://igracias.telkomuniversity.ac.id/)
 
+> :warning: **Due to weird flow of filling form in igracias, you'll still need to submit questionaire manually**
+
 ## Running from Source
 
 **Requirement:**
