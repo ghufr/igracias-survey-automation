@@ -38,26 +38,24 @@ class App {
   }
 
   async start() {
+    const { driver } = this;
+
     await this.login();
     await this.dismissAlert();
     const surveys = await this.getSurveyUrl();
     for (let survey of surveys) {
-      await fillSurvey(survey);
+      await this.fillSurvey(survey);
     }
 
-    await this.driver.close();
+    await driver.close();
   }
 
   async getSurveyUrl() {
     const { driver, baseUrl, config } = this;
 
     await driver.get(`${baseUrl}/survey/index.php?pageid=${config.pageId}`);
-    const surveys = await this.driver.findElements(
-      By.xpath("//*[@id='form1']//a")
-    );
-    return Promise.all(
-      surveys.map((link) => link.getAttribute("href").catch(() => {}))
-    );
+    const surveys = await driver.findElements(By.xpath("//*[@id='form1']//a"));
+    return Promise.all(surveys.map((link) => link.getAttribute("href")));
   }
 
   async fillTextarea(feedback) {
