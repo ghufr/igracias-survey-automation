@@ -1,4 +1,7 @@
 const prompts = require("prompts");
+const { Builder } = require("selenium-webdriver");
+const { ServiceBuilder } = require("selenium-webdriver/firefox");
+
 const App = require("./app");
 const config = require("./config");
 
@@ -44,7 +47,16 @@ const config = require("./config");
     const res = await prompts(questions);
     const { username, password } = res;
 
-    const app = new App(username, password, config);
+    let driver = await new Builder().forBrowser("firefox");
+
+    if (config.gecko_path) {
+      const serviceBuilder = new ServiceBuilder(config.gecko_path);
+      driver = await driver.setFirefoxService(serviceBuilder).build();
+    } else {
+      driver = await driver.build();
+    }
+
+    const app = new App(username, password, driver, config);
     await app.start();
 
     console.log("Done...");
