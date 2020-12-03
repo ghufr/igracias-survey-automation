@@ -1,116 +1,117 @@
-const { Builder, By } = require("selenium-webdriver");
-const { ServiceBuilder } = require("selenium-webdriver/firefox");
-// const path = require("path");
+const { By } = require("selenium-webdriver");
 
-const getRawLinks = (links) => {
-  const promises = links.map(async (link) => {
-    return await link.getAttribute("href").catch(() => {});
-  });
-  return Promise.all(promises);
-};
+class App {
+  baseUrl = "https://igracias.telkomuniversity.ac.id";
 
-const fillSurvey = async (links, driver, config) => {
-  for (let link of links) {
-    await driver.get(link);
-
-    const hlm = await driver.findElements(By.className("hlm1"));
-    for (let i = 0; i < hlm.length; i++) {
-      const question = await driver.findElements(
-        By.xpath("//*[contains(@id, 'radio')]")
-      );
-      // Question each part
-      for (let index = 0; index < question.length; index++) {
-        await question[index]
-          .findElements(By.tagName("input"))
-          .then(async (radio) => {
-            await radio[config.rating].click();
-          })
-          .catch(() => {});
-      }
-      await driver.findElement(By.xpath("//*[@value='simpan']")).click();
-
-      // Search for textbox
-      const textBoxs = await driver.findElements(By.tagName("textarea"));
-      for (let textbox of textBoxs) {
-        await textbox.clear();
-        await textbox.sendKeys(config.feedback);
-      }
-    }
-    await driver.findElement(By.xpath("//*[@value='simpan']")).click();
+  constructor(username, password, driver, config) {
+    this.username = username;
+    this.password = password;
+    this.driver = driver;
+    this.config = config;
   }
-  await driver.findElement(By.xpath("//input[@class='floatL4']")).click();
-};
 
-async function app(username, password, config) {
-  let driver = await new Builder().forBrowser("firefox");
-  try {
-    if (config.gecko_path) {
-      const serviceBuilder = new ServiceBuilder(config.gecko_path);
-      driver = await driver.setFirefoxService(serviceBuilder).build();
-    } else {
-      driver = await driver.build();
-    }
+  async login() {
+    const { driver, baseUrl, username, password } = this;
 
-    // let options = new S.Options().setBinary(config.gecko_path);
-
-    // let driver = await new Builder()
-    //   .setFirefoxOptions(options)
-    //   .forBrowser("firefox")
-    //   .build();
-    const baseUrl = "https://igracias.telkomuniversity.ac.id";
-    let surveyPath = `survey/index.php?pageid=${config.pageId}`;
-    const surveyUrl = `${baseUrl}/${surveyPath}`;
     await driver.get(baseUrl);
     await driver.sleep(2000);
 
-    // Password Login
-    const styl = "arguments[0].style";
-    const js = `${styl}.height='400px'; ${styl}.marginTop='-100px';`;
+    const js = `arguments[0].style.height='400px'; arguments[0].style.marginTop='-100px';`;
 
-    const login_form = await driver.findElement(By.id("ac_subitem_login"));
-    await driver.executeScript(js, login_form);
+    const loginForm = await driver.findElement(By.id("ac_subitem_login"));
+    await driver.executeScript(js, loginForm);
 
     const form = await driver.findElement(By.name("loginform"));
     await form.findElement(By.id("textUsername")).sendKeys(username);
     await form.findElement(By.id("textPassword")).sendKeys(password);
-    // return;
+
     await form.findElement(By.id("submit")).click();
     await driver.sleep(2000);
-    // Dismiss nasty alert()
-    const alert = await driver.switchTo().alert();
-    console.log(alert);
-    await alert.accept();
-    // await driver.switchTo().activeElement().sendKeys(Key.RETURN);
-    // driver.switchTo().alert().accept();
-    await driver.get(surveyUrl);
+  }
 
-    const surveys = await driver.findElements(By.xpath("//*[@id='form1']//a"));
-    const survey_url = await getRawLinks(surveys);
+  async dismissAlert() {
+    const { driver } = this;
+    try {
+      const alert = await driver.switchTo().alert();
+      await alert.accept();
+    } catch (err) {}
+  }
 
-    for (let survey of survey_url) {
-      await driver.get(survey);
-
-      const isSurvey = await driver.findElements(By.className("hlm2"));
-
-      if (isSurvey.length > 0) {
-        // Fill Survey
-        await fillSurvey([survey], driver, config);
-      } else {
-        // There still a menu
-        const lectures = await driver.findElements(
-          By.xpath("//*[@id='form1']//a")
-        );
-        const lectures_url = await getRawLinks(lectures);
-        await fillSurvey(lectures_url, driver, config);
-        // await driver.get(survey);
-      }
-      await driver.close();
+  async start() {
+    await this.login();
+    await this.dismissAlert();
+    const surveys = await this.getSurveyUrl();
+    for (let survey of surveys) {
+      await fillSurvey(survey);
     }
-  } catch (e) {
-    console.log("Something went wrong");
-    console.log(e);
-    // driver.close();
+
+    await this.driver.close();
+  }
+
+  async getSurveyUrl() {
+    const { driver, baseUrl, config } = this;
+
+    await driver.get(`${baseUrl}/survey/index.php?pageid=${config.pageId}`);
+    const surveys = await this.driver.findElements(
+      By.xpath("//*[@id='form1']//a")
+    );
+    return Promise.all(
+      surveys.map((link) => link.getAttribute("href").catch(() => {}))
+    );
+  }
+
+  async fillTextarea(feedback) {
+    const { driver } = this;
+    const textareas = await driver.findElements(By.css("textarea"));
+    if (textareas && textareas.length > 0) {
+      for (let textarea of textareas) {
+        await textarea.clear();
+        await textarea.sendKeys(feedback);
+      }
+    }
+  }
+
+  async fillMultipleChoice(question) {
+    const { config } = this;
+
+    // How many choice are there
+    const radios = await question.findElements(By.css("input"));
+
+    if (radios[config.rating]) {
+      return radios[config.rating].click();
+    }
+    return radios[0].click();
+  }
+
+  async fillSurvey(survey) {
+    const { driver, config } = this;
+
+    await driver.get(survey);
+    const pages = await driver.findElements(
+      By.xpath("//*[contains(text(), 'Part')]")
+    );
+
+    console.log(survey);
+    console.log("Total Halaman: ", pages.length);
+
+    for (let i = 0; i < pages.length; i++) {
+      const questions = await driver.findElements(By.id("radioX"));
+
+      for (let index = 0; index < questions.length; index++) {
+        await this.fillMultipleChoice(questions[i]);
+      }
+
+      await this.fillTextarea(config.feedback);
+
+      // Save
+      await driver.findElement(By.xpath("//input[@class='floatL3']")).click();
+    }
+
+    // Submit
+    await driver
+      .findElement(By.xpath("//input[@src='../images/btn_submit.gif']"))
+      .click();
   }
 }
 
-module.exports = app;
+module.exports = App;

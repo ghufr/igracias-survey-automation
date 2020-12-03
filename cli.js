@@ -1,5 +1,6 @@
 const prompts = require("prompts");
-const app = require("./app");
+const App = require("./app");
+const config = require("./config");
 
 (async () => {
   try {
@@ -8,12 +9,12 @@ const app = require("./app");
       {
         type: "text",
         name: "username",
-        message: "Username:"
+        message: "Username:",
       },
       {
         type: "password",
         name: "password",
-        message: "Password:"
+        message: "Password:",
       },
       {
         type: "select",
@@ -23,26 +24,30 @@ const app = require("./app");
           { title: "Sangat Puas", value: 0 },
           { title: "Puas", value: 1 },
           { title: "Tidak Puas", value: 2 },
-          { title: "Sangat tidak Puas", value: 3 }
+          { title: "Sangat tidak Puas", value: 3 },
+          { title: "10", value: 9 },
         ],
         initial: 0,
-        hint: "Untuk semua penilaian"
+        hint: "Untuk semua penilaian",
       },
       {
         type: "text",
         name: "feedback",
-        message: "Feedback:"
+        message: "Feedback:",
       },
       {
         type: "text",
         name: "gecko_path",
-        message: "Gecko path: (leave blank if gecko added to PATH)"
-      }
+        message: "Gecko path: (leave blank if gecko added to PATH)",
+      },
     ];
     const res = await prompts(questions);
-    const { username, password, ...config } = res;
-    await app(username, password, { ...config, pageId: 2001 });
-    console.log("Done");
+    const { username, password } = res;
+
+    const app = new App(username, password, config);
+    await app.start();
+
+    console.log("Done...");
   } catch (error) {
     console.log(error);
   }

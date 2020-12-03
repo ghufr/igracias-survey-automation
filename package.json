@@ -1,18 +1,19 @@
 {
   "name": "igracias-survey-automation",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Igracias Survey Automation",
   "main": "main.js",
   "license": "ISC",
   "private": true,
   "dependencies": {
     "dotenv": "^8.2.0",
-    "prompts": "^2.3.0",
-    "selenium-webdriver": "^4.0.0-alpha.1"
+    "prompts": "^2.4.0",
+    "selenium-webdriver": "^4.0.0-alpha.7"
   },
   "scripts": {
     "start": "node ./main.js",
-    "debug": "node --nolazy --inspect-brk=9229 ./main.js"
+    "debug": "node --nolazy --inspect-brk=9229 ./main.js",
+    "lint": "eslint ./main.js"
   },
   "devDependencies": {
     "eslint": "^6.7.2"
