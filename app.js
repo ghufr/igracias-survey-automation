@@ -1,13 +1,12 @@
 const { By } = require("selenium-webdriver");
 
 class App {
-  baseUrl = "https://igracias.telkomuniversity.ac.id";
-
   constructor(username, password, driver, config) {
     this.username = username;
     this.password = password;
     this.driver = driver;
     this.config = config;
+    this.baseUrl = "https://igracias.telkomuniversity.ac.id";
   }
 
   async login() {
@@ -34,14 +33,20 @@ class App {
     try {
       const alert = await driver.switchTo().alert();
       await alert.accept();
-    } catch (err) {}
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   async start() {
-    const { driver } = this;
+    const { driver, config } = this;
 
     await this.login();
     await this.dismissAlert();
+    await driver.get(
+      `${this.baseUrl}/survey/index.php?pageid=${config.pageId}&QID=3082`
+    );
+    await driver.sleep(1000);
     const surveys = await this.getSurveyUrl();
     for (let survey of surveys) {
       await this.fillSurvey(survey);
@@ -54,7 +59,9 @@ class App {
     const { driver, baseUrl, config } = this;
 
     await driver.get(`${baseUrl}/survey/index.php?pageid=${config.pageId}`);
-    const surveys = await driver.findElements(By.xpath("//*[@id='form1']//a"));
+    const surveys = await driver.findElements(
+      By.xpath("//*[@class='tbf2']//a")
+    );
     return Promise.all(surveys.map((link) => link.getAttribute("href")));
   }
 
@@ -73,7 +80,7 @@ class App {
     const { config } = this;
 
     // How many choice are there
-    const radios = await question.findElements(By.css("input"));
+    const radios = await question.findElements(By.className("opt"));
 
     if (radios[config.rating]) {
       return radios[config.rating].click();
@@ -92,11 +99,13 @@ class App {
     console.log(survey);
     console.log("Total Halaman: ", pages.length);
 
+    await driver.sleep(1000);
     for (let i = 0; i < pages.length; i++) {
       const questions = await driver.findElements(By.id("radioX"));
 
-      for (let index = 0; index < questions.length; index++) {
-        await this.fillMultipleChoice(questions[i]);
+      for (let j = 0; j < questions.length; j++) {
+        await this.fillMultipleChoice(questions[j]);
+        await driver.sleep(100);
       }
 
       await this.fillTextarea(config.feedback);
@@ -106,9 +115,7 @@ class App {
     }
 
     // Submit
-    await driver
-      .findElement(By.xpath("//input[@src='../images/btn_submit.gif']"))
-      .click();
+    await driver.findElement(By.xpath("//input[@class='floatL3']")).click();
   }
 }
 

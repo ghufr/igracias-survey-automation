@@ -5,7 +5,7 @@ module.exports = {
    * 2 (Tidak Puas),
    * 3 (Sangat tidak puas)
    */
-  rating: 9,
+  rating: 0,
   feedback: "(https://github.com/ghufr/igracias-survey-automation)",
-  pageId: 1661,
+  pageId: 2001,
 };
