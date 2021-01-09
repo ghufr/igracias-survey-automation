@@ -115,7 +115,7 @@ class App {
     }
 
     // Submit
-    await driver.findElement(By.xpath("//input[@class='floatL3']")).click();
+    await driver.findElement(By.xpath("//input[@class='floatL4']")).click();
   }
 }
 
