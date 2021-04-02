@@ -13,7 +13,7 @@ class App {
     const { driver, baseUrl, username, password } = this;
 
     await driver.get(baseUrl);
-    await driver.sleep(2000);
+    await driver.sleep(1000);
 
     const js = `arguments[0].style.height='400px'; arguments[0].style.marginTop='-100px';`;
 
@@ -25,7 +25,6 @@ class App {
     await form.findElement(By.id("textPassword")).sendKeys(password);
 
     await form.findElement(By.id("submit")).click();
-    await driver.sleep(2000);
   }
 
   async dismissAlert() {
@@ -39,15 +38,20 @@ class App {
   }
 
   async start() {
-    const { driver, config } = this;
+    const { driver, config, baseUrl } = this;
+
+    const start_url = `${baseUrl}/survey/index.php?pageid=${config.pageId}`;
 
     await this.login();
-    await this.dismissAlert();
-    await driver.get(
-      `${this.baseUrl}/survey/index.php?pageid=${config.pageId}&QID=3082`
-    );
     await driver.sleep(1000);
-    const surveys = await this.getSurveyUrl();
+
+    await this.dismissAlert();
+    await driver.get(start_url);
+    await driver.sleep(1000);
+
+    await driver.get(start_url);
+    const surveys = await this.getSurveyElement();
+
     for (let survey of surveys) {
       await this.fillSurvey(survey);
     }
@@ -55,14 +59,14 @@ class App {
     await driver.close();
   }
 
-  async getSurveyUrl() {
-    const { driver, baseUrl, config } = this;
-
-    await driver.get(`${baseUrl}/survey/index.php?pageid=${config.pageId}`);
+  async getSurveyElement() {
+    const { driver } = this;
     const surveys = await driver.findElements(
       By.xpath("//*[@class='tbf2']//a")
     );
-    return Promise.all(surveys.map((link) => link.getAttribute("href")));
+    return Promise.all(
+      surveys.map((link) => link.getAttribute("href"))
+    ).catch(() => []);
   }
 
   async fillTextarea(feedback) {
@@ -82,6 +86,10 @@ class App {
     // How many choice are there
     const radios = await question.findElements(By.className("opt"));
 
+    if (config.rating === "random") {
+      const rand = Math.floor(Math.random() * radios.length);
+      return radios[rand].click();
+    }
     if (radios[config.rating]) {
       return radios[config.rating].click();
     }
@@ -92,20 +100,26 @@ class App {
     const { driver, config } = this;
 
     await driver.get(survey);
+    const sub_surveys = await this.getSurveyElement();
+
+    if (sub_surveys.length > 0) {
+      for (let survey of sub_surveys) {
+        await this.fillSurvey(survey);
+      }
+    }
+
     const pages = await driver.findElements(
       By.xpath("//*[contains(text(), 'Part')]")
     );
 
     console.log(survey);
-    console.log("Total Halaman: ", pages.length);
 
-    await driver.sleep(1000);
     for (let i = 0; i < pages.length; i++) {
       const questions = await driver.findElements(By.id("radioX"));
 
       for (let j = 0; j < questions.length; j++) {
         await this.fillMultipleChoice(questions[j]);
-        await driver.sleep(100);
+        await driver.sleep(10);
       }
 
       await this.fillTextarea(config.feedback);
@@ -115,7 +129,7 @@ class App {
     }
 
     // Submit
-    await driver.findElement(By.xpath("//input[@class='floatL4']")).click();
+    // await driver.findElement(By.xpath("//input[@class='floatL4']")).click();
   }
 }
 
